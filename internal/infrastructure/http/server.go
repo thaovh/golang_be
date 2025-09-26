@@ -8,6 +8,7 @@ import (
 
 	"bm-staff/internal/infrastructure/config"
 	"bm-staff/internal/interfaces/http/handlers"
+	"bm-staff/internal/interfaces/http/middleware"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -24,7 +25,7 @@ type Server struct {
 }
 
 // NewServer creates a new HTTP server
-func NewServer(config *config.Config, logger *zap.Logger, userHandler *handlers.UserHandler) *Server {
+func NewServer(config *config.Config, logger *zap.Logger, userHandler *handlers.UserHandler, authHandler *handlers.AuthHandler, authMiddleware *middleware.AuthMiddleware) *Server {
 	// Set Gin mode
 	if config.Logging.Level == "debug" {
 		gin.SetMode(gin.DebugMode)
@@ -40,7 +41,7 @@ func NewServer(config *config.Config, logger *zap.Logger, userHandler *handlers.
 	engine.Use(LoggerMiddleware(logger))
 
 	// Setup routes
-	setupRoutes(engine, userHandler)
+	setupRoutes(engine, userHandler, authHandler, authMiddleware)
 
 	return &Server{
 		config:  config,
@@ -50,7 +51,7 @@ func NewServer(config *config.Config, logger *zap.Logger, userHandler *handlers.
 }
 
 // setupRoutes sets up all HTTP routes
-func setupRoutes(engine *gin.Engine, userHandler *handlers.UserHandler) {
+func setupRoutes(engine *gin.Engine, userHandler *handlers.UserHandler, authHandler *handlers.AuthHandler, authMiddleware *middleware.AuthMiddleware) {
 	// Swagger documentation
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -65,8 +66,17 @@ func setupRoutes(engine *gin.Engine, userHandler *handlers.UserHandler) {
 	// API v1 routes
 	v1 := engine.Group("/api/v1")
 	{
-		// User routes
+		// Authentication routes (public)
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/logout", authHandler.Logout)
+			auth.POST("/refresh", authHandler.RefreshToken)
+		}
+
+		// User routes (protected)
 		users := v1.Group("/users")
+		users.Use(authMiddleware.RequireAuth()) // Require authentication
 		{
 			users.POST("", userHandler.CreateUser)
 			users.GET("/:id", userHandler.GetUser)

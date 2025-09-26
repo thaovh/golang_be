@@ -1,5 +1,33 @@
 basePath: /api/v1
 definitions:
+  auth.LoginRequest:
+    properties:
+      password:
+        maxLength: 100
+        minLength: 8
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  auth.LogoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  auth.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
   user.CreateUserRequest:
     properties:
       email:
@@ -11,6 +39,10 @@ definitions:
       last_name:
         maxLength: 100
         minLength: 1
+        type: string
+      password:
+        maxLength: 100
+        minLength: 8
         type: string
       phone:
         maxLength: 20
@@ -24,6 +56,7 @@ definitions:
     - email
     - first_name
     - last_name
+    - password
     - username
     type: object
   user.UpdateUserRequest:
@@ -72,6 +105,125 @@ info:
   title: BM Staff API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request - validation error
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid credentials
+          schema:
+            additionalProperties: true
+            type: object
+        "423":
+          description: Account locked
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user and revoke refresh token
+      parameters:
+      - description: Logout request
+        in: body
+        name: logout
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request - validation error
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid token
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get new access token using refresh token
+      parameters:
+      - description: Refresh token request
+        in: body
+        name: refresh
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token refreshed successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request - validation error
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - invalid refresh token
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh access token
+      tags:
+      - auth
   /users:
     get:
       consumes:
@@ -115,7 +267,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new user with the provided information
+      description: Create a new user with the provided information including password
       parameters:
       - description: User information
         in: body

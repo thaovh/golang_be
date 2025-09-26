@@ -11,6 +11,7 @@ type Config struct {
 	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
 	Logging  LoggingConfig  `mapstructure:"logging"`
+	JWT      JWTConfig      `mapstructure:"jwt"`
 }
 
 // ServerConfig holds server configuration
@@ -39,6 +40,13 @@ type DatabaseConfig struct {
 type LoggingConfig struct {
 	Level  string `mapstructure:"level"`
 	Format string `mapstructure:"format"`
+}
+
+// JWTConfig holds JWT configuration
+type JWTConfig struct {
+	SecretKey     string        `mapstructure:"secret_key"`
+	AccessExpiry  time.Duration `mapstructure:"access_expiry"`
+	RefreshExpiry time.Duration `mapstructure:"refresh_expiry"`
 }
 
 // Load loads configuration from file and environment variables
@@ -93,4 +101,9 @@ func setDefaults() {
 	// Logging defaults
 	viper.SetDefault("logging.level", "info")
 	viper.SetDefault("logging.format", "json")
+
+	// JWT defaults
+	viper.SetDefault("jwt.secret_key", "bm-staff-secret-key-change-in-production")
+	viper.SetDefault("jwt.access_expiry", "15m")
+	viper.SetDefault("jwt.refresh_expiry", "168h") // 7 days = 168 hours
 }

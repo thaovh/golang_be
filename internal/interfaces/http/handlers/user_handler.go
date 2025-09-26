@@ -43,7 +43,7 @@ func NewUserHandler(
 
 // CreateUser handles POST /api/v1/users
 // @Summary      Create a new user
-// @Description  Create a new user with the provided information
+// @Description  Create a new user with the provided information including password
 // @Tags         users
 // @Accept       json
 // @Produce      json
