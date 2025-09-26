@@ -1,0 +1,841 @@
+---
+alwaysApply: true
+---
+You are an expert in Go, microservices architecture, and clean backend development practices. Your role is to ensure code is idiomatic, modular, testable, and aligned with modern best practices and design patterns.
+
+### General Responsibilities:
+- Guide the development of idiomatic, maintainable, and high-performance Go code.
+- Enforce modular design and separation of concerns through Clean Architecture.
+- Promote test-driven development, robust observability, and scalable patterns across services.
+
+### Architecture Patterns:
+- Apply **Clean Architecture** by structuring code into handlers/controllers, services/use cases, repositories/data access, and domain models.
+- Use **domain-driven design** principles where applicable.
+- Prioritize **interface-driven development** with explicit dependency injection.
+- Prefer **composition over inheritance**; favor small, purpose-specific interfaces.
+- Ensure that all public functions interact with interfaces, not concrete types, to enhance flexibility and testability.
+
+### Project Structure Guidelines:
+
+#### Clean Architecture Folder Structure:
+```
+project-root/
+├── cmd/                           # Application entrypoints
+│   ├── api/                      # HTTP API server
+│   │   └── main.go
+│   ├── worker/                   # Background worker
+│   │   └── main.go
+│   └── migration/                # Database migration tool
+│       └── main.go
+├── internal/                     # Private application code
+│   ├── domain/                   # Business entities and rules
+│   │   ├── entities/            # Core business objects
+│   │   │   ├── user.go
+│   │   │   ├── order.go
+│   │   │   └── product.go
+│   │   ├── valueobjects/        # Value objects
+│   │   │   ├── email.go
+│   │   │   ├── money.go
+│   │   │   └── address.go
+│   │   ├── repositories/        # Repository interfaces
+│   │   │   ├── user_repository.go
+│   │   │   └── order_repository.go
+│   │   └── services/            # Domain services
+│   │       ├── user_service.go
+│   │       └── order_service.go
+│   ├── usecases/                # Application business rules
+│   │   ├── user/               # User use cases
+│   │   │   ├── create_user.go
+│   │   │   ├── get_user.go
+│   │   │   └── update_user.go
+│   │   ├── order/              # Order use cases
+│   │   │   ├── create_order.go
+│   │   │   ├── process_order.go
+│   │   │   └── cancel_order.go
+│   │   └── interfaces/         # Use case interfaces
+│   │       ├── user_usecase.go
+│   │       └── order_usecase.go
+│   ├── interfaces/             # Interface adapters
+│   │   ├── http/              # HTTP handlers
+│   │   │   ├── handlers/      # Request handlers
+│   │   │   │   ├── user_handler.go
+│   │   │   │   └── order_handler.go
+│   │   │   ├── middleware/    # HTTP middleware
+│   │   │   │   ├── auth.go
+│   │   │   │   ├── logging.go
+│   │   │   │   └── cors.go
+│   │   │   ├── dto/           # Data transfer objects
+│   │   │   │   ├── user_dto.go
+│   │   │   │   └── order_dto.go
+│   │   │   └── validators/    # Request validators
+│   │   │       ├── user_validator.go
+│   │   │       └── order_validator.go
+│   │   ├── grpc/              # gRPC handlers
+│   │   │   ├── handlers/
+│   │   │   ├── middleware/
+│   │   │   └── dto/
+│   │   ├── messaging/         # Message handlers
+│   │   │   ├── consumers/     # Message consumers
+│   │   │   │   ├── order_consumer.go
+│   │   │   │   └── payment_consumer.go
+│   │   │   ├── publishers/    # Message publishers
+│   │   │   │   ├── order_publisher.go
+│   │   │   │   └── notification_publisher.go
+│   │   │   └── handlers/      # Message handlers
+│   │   │       ├── order_handler.go
+│   │   │       └── payment_handler.go
+│   │   └── repositories/      # Repository implementations
+│   │       ├── oracle/        # Oracle database
+│   │       │   ├── user_repository.go
+│   │       │   └── order_repository.go
+│   │       ├── redis/         # Redis cache
+│   │       │   ├── user_cache.go
+│   │       │   └── session_cache.go
+│   │       └── external/      # External service clients
+│   │           ├── payment_client.go
+│   │           └── notification_client.go
+│   ├── infrastructure/        # Frameworks and drivers
+│   │   ├── database/         # Database connections
+│   │   │   ├── oracle.go
+│   │   │   └── redis.go
+│   │   ├── messaging/        # Message queue setup
+│   │   │   ├── rabbitmq.go
+│   │   │   └── kafka.go
+│   │   ├── http/             # HTTP server setup
+│   │   │   ├── server.go
+│   │   │   └── router.go
+│   │   ├── grpc/             # gRPC server setup
+│   │   │   ├── server.go
+│   │   │   └── interceptors.go
+│   │   ├── logging/          # Logging setup
+│   │   │   ├── logger.go
+│   │   │   └── middleware.go
+│   │   ├── monitoring/       # Monitoring setup
+│   │   │   ├── metrics.go
+│   │   │   ├── tracing.go
+│   │   │   └── health.go
+│   │   └── config/           # Configuration loading
+│   │       ├── config.go
+│   │       └── env.go
+│   └── di/                   # Dependency injection
+│       ├── container.go      # DI container
+│       ├── providers.go      # Service providers
+│       └── wire.go          # Wire configuration
+├── pkg/                      # Public packages
+│   ├── errors/              # Error handling utilities
+│   │   ├── app_error.go
+│   │   └── error_codes.go
+│   ├── utils/               # Utility functions
+│   │   ├── validation.go
+│   │   ├── crypto.go
+│   │   └── time.go
+│   ├── dataloader/          # DataLoader implementation
+│   │   ├── loader.go
+│   │   └── registry.go
+│   ├── middleware/          # Reusable middleware
+│   │   ├── auth.go
+│   │   ├── logging.go
+│   │   └── recovery.go
+│   └── constants/           # Application constants
+│       ├── http_status.go
+│       └── error_codes.go
+├── api/                     # API definitions
+│   ├── openapi/            # OpenAPI specifications
+│   │   ├── v1/
+│   │   │   ├── users.yaml
+│   │   │   └── orders.yaml
+│   │   └── v2/
+│   ├── proto/              # Protocol buffer definitions
+│   │   ├── user.proto
+│   │   └── order.proto
+│   └── generated/          # Generated code
+│       ├── openapi/
+│       └── proto/
+├── configs/                # Configuration files
+│   ├── development.yaml
+│   ├── staging.yaml
+│   ├── production.yaml
+│   └── docker/
+│       ├── Dockerfile
+│       └── docker-compose.yml
+├── migrations/             # Database migrations
+│   ├── 001_create_users.sql
+│   ├── 002_create_orders.sql
+│   └── 003_add_indexes.sql
+├── scripts/               # Build and deployment scripts
+│   ├── build.sh
+│   ├── test.sh
+│   ├── deploy.sh
+│   └── migrate.sh
+├── test/                  # Test utilities and mocks
+│   ├── fixtures/          # Test data
+│   │   ├── users.json
+│   │   └── orders.json
+│   ├── mocks/             # Generated mocks
+│   │   ├── user_repository_mock.go
+│   │   └── order_repository_mock.go
+│   ├── integration/       # Integration tests
+│   │   ├── user_test.go
+│   │   └── order_test.go
+│   └── e2e/              # End-to-end tests
+│       ├── api_test.go
+│       └── workflow_test.go
+├── docs/                  # Documentation
+│   ├── api/              # API documentation
+│   ├── architecture/     # Architecture documentation
+│   ├── deployment/       # Deployment guides
+│   └── development/      # Development guides
+├── .github/              # GitHub workflows
+│   └── workflows/
+│       ├── ci.yml
+│       ├── cd.yml
+│       └── security.yml
+├── go.mod
+├── go.sum
+├── Makefile
+├── README.md
+├── CONTRIBUTING.md
+└── ARCHITECTURE.md
+```
+
+#### Clean Architecture Layer Responsibilities:
+
+##### Domain Layer (internal/domain/):
+- **Entities**: Core business objects with business logic
+- **Value Objects**: Immutable objects representing concepts
+- **Repository Interfaces**: Contracts for data access
+- **Domain Services**: Business logic that doesn't belong to entities
+
+##### Use Cases Layer (internal/usecases/):
+- **Application Business Rules**: Orchestrate domain objects
+- **Input/Output Boundaries**: Define interfaces for external layers
+- **Transaction Management**: Handle business transactions
+- **Validation**: Business rule validation
+
+##### Interface Adapters Layer (internal/interfaces/):
+- **HTTP Handlers**: Convert HTTP requests to use case calls
+- **gRPC Handlers**: Convert gRPC requests to use case calls
+- **Message Handlers**: Process async messages
+- **Repository Implementations**: Implement data access
+- **DTOs**: Data transfer objects for external communication
+
+##### Infrastructure Layer (internal/infrastructure/):
+- **Database Connections**: Setup database connections
+- **Message Queues**: Setup messaging infrastructure
+- **HTTP/gRPC Servers**: Setup web servers
+- **Logging & Monitoring**: Setup observability
+- **Configuration**: Load and manage configuration
+
+#### Dependency Direction:
+- **Domain** ← **Use Cases** ← **Interface Adapters** ← **Infrastructure**
+- **Domain** has no dependencies on other layers
+- **Use Cases** depend only on Domain
+- **Interface Adapters** depend on Use Cases and Domain
+- **Infrastructure** depends on all layers but provides implementations
+
+#### Key Principles:
+- **Dependency Inversion**: Depend on abstractions, not concretions
+- **Single Responsibility**: Each layer has one reason to change
+- **Interface Segregation**: Small, focused interfaces
+- **Open/Closed**: Open for extension, closed for modification
+- **Liskov Substitution**: Subtypes must be substitutable for base types
+
+### Development Best Practices:
+- Write **short, focused functions** with a single responsibility.
+- Always **check and handle errors explicitly**, using wrapped errors for traceability ('fmt.Errorf("context: %w", err)').
+- Avoid **global state**; use constructor functions to inject dependencies.
+- Leverage **Go's context propagation** for request-scoped values, deadlines, and cancellations.
+- Use **goroutines safely**; guard shared state with channels or sync primitives.
+- **Defer closing resources** and handle them carefully to avoid leaks.
+
+### Security and Resilience:
+- Apply **input validation and sanitization** rigorously, especially on inputs from external sources.
+- Use secure defaults for **JWT, cookies**, and configuration settings.
+- Isolate sensitive operations with clear **permission boundaries**.
+- Implement **retries, exponential backoff, and timeouts** on all external calls.
+- Use **circuit breakers and rate limiting** for service protection.
+- Consider implementing **distributed rate-limiting** to prevent abuse across services (e.g., using Redis).
+
+### Testing:
+- Write **unit tests** using table-driven patterns and parallel execution.
+- **Mock external interfaces** cleanly using generated or handwritten mocks.
+- Separate **fast unit tests** from slower integration and E2E tests.
+- Ensure **test coverage** for every exported function, with behavioral checks.
+- Use tools like 'go test -cover' to ensure adequate test coverage.
+
+### Documentation and Standards:
+- Document public functions and packages with **GoDoc-style comments**.
+- Provide concise **READMEs** for services and libraries.
+- Maintain a 'CONTRIBUTING.md' and 'ARCHITECTURE.md' to guide team practices.
+- Enforce naming consistency and formatting with 'go fmt', 'goimports', and 'golangci-lint'.
+
+### Observability with OpenTelemetry:
+- Use **OpenTelemetry** for distributed tracing, metrics, and structured logging.
+- Start and propagate tracing **spans** across all service boundaries (HTTP, gRPC, DB, external APIs).
+- Always attach 'context.Context' to spans, logs, and metric exports.
+- Use **otel.Tracer** for creating spans and **otel.Meter** for collecting metrics.
+- Record important attributes like request parameters, user ID, and error messages in spans.
+- Use **log correlation** by injecting trace IDs into structured logs.
+- Export data to **OpenTelemetry Collector**, **Jaeger**, or **Prometheus**.
+
+### Tracing and Monitoring Best Practices:
+- Trace all **incoming requests** and propagate context through internal and external calls.
+- Use **middleware** to instrument HTTP and gRPC endpoints automatically.
+- Annotate slow, critical, or error-prone paths with **custom spans**.
+- Monitor application health via key metrics: **request latency, throughput, error rate, resource usage**.
+- Define **SLIs** (e.g., request latency < 300ms) and track them with **Prometheus/Grafana** dashboards.
+- Alert on key conditions (e.g., high 5xx rates, DB errors, Redis timeouts) using a robust alerting pipeline.
+- Avoid excessive **cardinality** in labels and traces; keep observability overhead minimal.
+- Use **log levels** appropriately (info, warn, error) and emit **JSON-formatted logs** for ingestion by observability tools.
+- Include unique **request IDs** and trace context in all logs for correlation.
+
+### Performance:
+- Use **benchmarks** to track performance regressions and identify bottlenecks.
+- Minimize **allocations** and avoid premature optimization; profile before tuning.
+- Instrument key areas (DB, external calls, heavy computation) to monitor runtime behavior.
+
+### Concurrency and Goroutines:
+- Ensure safe use of **goroutines**, and guard shared state with channels or sync primitives.
+- Implement **goroutine cancellation** using context propagation to avoid leaks and deadlocks.
+
+### Tooling and Dependencies:
+- Rely on **stable, minimal third-party libraries**; prefer the standard library where feasible.
+- Use **Go modules** for dependency management and reproducibility.
+- Version-lock dependencies for deterministic builds.
+- Integrate **linting, testing, and security checks** in CI pipelines.
+
+### Error Handling:
+
+#### Error Classification & Standards:
+- Use **standardized error codes** across all services
+- Implement **error hierarchy** with base error types
+- Apply **consistent error formatting** for logging and API responses
+- Use **error codes** for programmatic error handling
+- Implement **error context** with request IDs and trace information
+
+#### Error Code Standards:
+```go
+// Standard error codes
+const (
+    // 1xxx - System Errors
+    ErrSystemInternal     = "SYS_001" // Internal system error
+    ErrSystemTimeout      = "SYS_002" // Request timeout
+    ErrSystemUnavailable  = "SYS_003" // Service unavailable
+    
+    // 2xxx - Validation Errors
+    ErrValidationRequired = "VAL_001" // Required field missing
+    ErrValidationFormat   = "VAL_002" // Invalid format
+    ErrValidationRange    = "VAL_003" // Value out of range
+    
+    // 3xxx - Authentication/Authorization
+    ErrAuthInvalidToken   = "AUTH_001" // Invalid token
+    ErrAuthExpiredToken   = "AUTH_002" // Token expired
+    ErrAuthInsufficient   = "AUTH_003" // Insufficient permissions
+    
+    // 4xxx - Business Logic
+    ErrBusinessNotFound   = "BIZ_001" // Resource not found
+    ErrBusinessConflict   = "BIZ_002" // Business rule conflict
+    ErrBusinessLimit      = "BIZ_003" // Business limit exceeded
+    
+    // 5xxx - External Dependencies
+    ErrExternalTimeout    = "EXT_001" // External service timeout
+    ErrExternalUnavailable = "EXT_002" // External service unavailable
+    ErrExternalInvalid    = "EXT_003" // External service error
+)
+```
+
+#### Custom Error Types:
+```go
+// Base error type
+type AppError struct {
+    Code      string            `json:"code"`
+    Message   string            `json:"message"`
+    Details   map[string]any    `json:"details,omitempty"`
+    Cause     error             `json:"-"`
+    Timestamp time.Time         `json:"timestamp"`
+    RequestID string            `json:"request_id,omitempty"`
+    TraceID   string            `json:"trace_id,omitempty"`
+}
+
+func (e *AppError) Error() string {
+    return fmt.Sprintf("[%s] %s", e.Code, e.Message)
+}
+
+func (e *AppError) Unwrap() error {
+    return e.Cause
+}
+
+// Error constructors
+func NewValidationError(code, message string, details map[string]any) *AppError {
+    return &AppError{
+        Code:      code,
+        Message:   message,
+        Details:   details,
+        Timestamp: time.Now(),
+    }
+}
+
+func WrapError(err error, code, message string) *AppError {
+    return &AppError{
+        Code:      code,
+        Message:   message,
+        Cause:     err,
+        Timestamp: time.Now(),
+    }
+}
+```
+
+#### Error Handling Patterns:
+- Use **error wrapping** with context: `fmt.Errorf("user service: %w", err)`
+- Implement **error boundaries** to prevent error propagation
+- Use **sentinel errors** for expected failures
+- Apply **error recovery** for non-critical failures
+- Implement **error logging** with structured format
+
+#### Error Logging Standards:
+```go
+// Structured error logging
+func LogError(ctx context.Context, err error, fields ...zap.Field) {
+    logger := GetLogger(ctx)
+    
+    if appErr, ok := err.(*AppError); ok {
+        logger.Error("Application error",
+            zap.String("error_code", appErr.Code),
+            zap.String("error_message", appErr.Message),
+            zap.Any("error_details", appErr.Details),
+            zap.String("request_id", appErr.RequestID),
+            zap.String("trace_id", appErr.TraceID),
+            zap.Error(appErr.Cause),
+        )
+    } else {
+        logger.Error("System error", zap.Error(err))
+    }
+}
+```
+
+#### API Error Response Format:
+```json
+{
+  "error": {
+    "code": "VAL_001",
+    "message": "Validation failed",
+    "details": {
+      "field": "email",
+      "reason": "Invalid email format"
+    },
+    "timestamp": "2024-01-15T10:30:00Z",
+    "request_id": "req_123456789",
+    "trace_id": "trace_987654321"
+  }
+}
+```
+
+#### Error Recovery Strategies:
+- Implement **circuit breaker** for external service errors
+- Use **retry mechanisms** with exponential backoff
+- Apply **fallback responses** for non-critical failures
+- Implement **graceful degradation** for partial failures
+- Use **dead letter queues** for failed message processing
+
+#### Error Monitoring & Alerting:
+- Monitor **error rates** by error code and service
+- Set up **alerts** for critical error thresholds
+- Track **error trends** over time
+- Implement **error dashboards** for real-time monitoring
+- Use **error correlation** across distributed services
+
+### Database Best Practices:
+
+#### Oracle Database Specific:
+- Use **Oracle-specific connection strings** with proper encoding
+- Implement **Oracle connection pooling** with `sql.DB` and appropriate pool settings
+- Use **Oracle-specific data types** (NUMBER, VARCHAR2, CLOB, BLOB, DATE, TIMESTAMP)
+- Apply **Oracle sequence** for auto-incrementing primary keys
+- Use **Oracle-specific SQL syntax** and functions (ROWNUM, ROWID, SYSDATE)
+- Implement **Oracle-specific error handling** for ORA-* error codes
+- Use **Oracle-specific indexing strategies** (B-tree, Bitmap, Function-based)
+- Apply **Oracle-specific performance tuning** (EXPLAIN PLAN, AWR reports)
+
+#### Oracle Naming Conventions:
+- Use **UPPERCASE** for all table names and column names
+- Use **UNDERSCORE** for word separation in table/column names
+- Use **singular** table names (USER, ORDER, PRODUCT)
+- Use **descriptive** column names (USER_ID, CREATED_AT, UPDATED_AT)
+- Use **consistent** naming patterns across all tables
+- Apply **Oracle-specific constraints** naming (PK_USERS, UK_USERS_USERNAME)
+
+#### Base Entity Standards:
+- Implement **BaseEntity** with common fields (ID, CreatedAt, UpdatedAt)
+- Use **UUID** as primary key for all entities
+- Apply **audit fields** (CreatedBy, UpdatedBy, DeletedAt)
+- Use **soft delete** pattern with DeletedAt field
+- Implement **versioning** with Version field for optimistic locking
+- Apply **tenant isolation** with TenantID field for multi-tenancy
+
+#### Oracle Connection & Pooling:
+```go
+// Oracle connection configuration
+dsn := fmt.Sprintf("%s/%s@%s:%s/%s", username, password, host, port, serviceName)
+db, err := sql.Open("oracle", dsn)
+db.SetMaxOpenConns(25)
+db.SetMaxIdleConns(5)
+db.SetConnMaxLifetime(5 * time.Minute)
+```
+
+#### Oracle Query Optimization:
+- Use **bind variables** to prevent SQL injection and improve performance
+- Implement **query hints** for Oracle optimizer
+- Use **Oracle-specific functions** (NVL, DECODE, CASE WHEN)
+- Apply **Oracle-specific joins** (LEFT OUTER JOIN, RIGHT OUTER JOIN)
+- Use **Oracle-specific pagination** with ROWNUM or ROW_NUMBER()
+
+#### DataLoader Pattern:
+
+##### Request-Scoped DataLoader Standards:
+- Use **request-scoped DataLoader** instances for each HTTP request
+- Implement **DataLoader registry** to manage multiple loaders per request
+- Apply **automatic cleanup** of DataLoader instances after request completion
+- Use **context-based DataLoader** to ensure request isolation
+- Implement **DataLoader middleware** for automatic setup and teardown
+
+##### DataLoader Registry Pattern:
+```go
+// DataLoader registry for request-scoped management
+type DataLoaderRegistry struct {
+    loaders map[string]interface{}
+    mu      sync.RWMutex
+}
+
+func NewDataLoaderRegistry() *DataLoaderRegistry {
+    return &DataLoaderRegistry{
+        loaders: make(map[string]interface{}),
+    }
+}
+
+func (r *DataLoaderRegistry) GetOrCreate[T any](key string, factory func() T) T {
+    r.mu.RLock()
+    if loader, exists := r.loaders[key]; exists {
+        r.mu.RUnlock()
+        return loader.(T)
+    }
+    r.mu.RUnlock()
+    
+    r.mu.Lock()
+    defer r.mu.Unlock()
+    
+    // Double-check pattern
+    if loader, exists := r.loaders[key]; exists {
+        return loader.(T)
+    }
+    
+    loader := factory()
+    r.loaders[key] = loader
+    return loader
+}
+
+func (r *DataLoaderRegistry) Clear() {
+    r.mu.Lock()
+    defer r.mu.Unlock()
+    r.loaders = make(map[string]interface{})
+}
+```
+
+##### Request-Scoped DataLoader Implementation:
+```go
+// Request-scoped DataLoader with context
+type RequestDataLoader[K comparable, V any] struct {
+    cache    map[K]V
+    pending  map[K][]chan V
+    batch    func(ctx context.Context, keys []K) ([]V, error)
+    mu       sync.RWMutex
+    maxBatch int
+    wait     time.Duration
+}
+
+func NewRequestDataLoader[K comparable, V any](
+    batch func(ctx context.Context, keys []K) ([]V, error),
+    maxBatch int,
+    wait time.Duration,
+) *RequestDataLoader[K, V] {
+    return &RequestDataLoader[K, V]{
+        cache:    make(map[K]V),
+        pending:  make(map[K][]chan V),
+        batch:    batch,
+        maxBatch: maxBatch,
+        wait:     wait,
+    }
+}
+
+func (dl *RequestDataLoader[K, V]) Load(ctx context.Context, key K) (V, error) {
+    dl.mu.RLock()
+    if value, exists := dl.cache[key]; exists {
+        dl.mu.RUnlock()
+        return value, nil
+    }
+    dl.mu.RUnlock()
+    
+    dl.mu.Lock()
+    defer dl.mu.Unlock()
+    
+    // Double-check pattern
+    if value, exists := dl.cache[key]; exists {
+        return value, nil
+    }
+    
+    // Create channel for this request
+    ch := make(chan V, 1)
+    dl.pending[key] = append(dl.pending[key], ch)
+    
+    // Trigger batch if needed
+    if len(dl.pending) >= dl.maxBatch {
+        go dl.executeBatch(ctx)
+    }
+    
+    // Wait for result
+    select {
+    case value := <-ch:
+        return value, nil
+    case <-ctx.Done():
+        return *new(V), ctx.Err()
+    }
+}
+
+func (dl *RequestDataLoader[K, V]) executeBatch(ctx context.Context) {
+    dl.mu.Lock()
+    keys := make([]K, 0, len(dl.pending))
+    for key := range dl.pending {
+        keys = append(keys, key)
+    }
+    dl.mu.Unlock()
+    
+    values, err := dl.batch(ctx, keys)
+    if err != nil {
+        // Handle error for all pending requests
+        dl.mu.Lock()
+        for key, chans := range dl.pending {
+            for _, ch := range chans {
+                close(ch)
+            }
+            delete(dl.pending, key)
+        }
+        dl.mu.Unlock()
+        return
+    }
+    
+    // Distribute results
+    dl.mu.Lock()
+    for i, key := range keys {
+        if i < len(values) {
+            dl.cache[key] = values[i]
+            for _, ch := range dl.pending[key] {
+                ch <- values[i]
+                close(ch)
+            }
+        }
+        delete(dl.pending, key)
+    }
+    dl.mu.Unlock()
+}
+```
+
+##### DataLoader Middleware:
+```go
+// DataLoader middleware for HTTP handlers
+func DataLoaderMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Create request-scoped DataLoader registry
+        registry := NewDataLoaderRegistry()
+        ctx := context.WithValue(r.Context(), "dataloader_registry", registry)
+        
+        // Ensure cleanup after request
+        defer registry.Clear()
+        
+        next.ServeHTTP(w, r.WithContext(ctx))
+    })
+}
+
+// Helper function to get DataLoader from context
+func GetDataLoader[T any](ctx context.Context, key string, factory func() T) T {
+    registry := ctx.Value("dataloader_registry").(*DataLoaderRegistry)
+    return registry.GetOrCreate(key, factory)
+}
+```
+
+##### DataLoader Usage Examples:
+```go
+// User DataLoader factory
+func NewUserLoader(ctx context.Context) *RequestDataLoader[int, *User] {
+    return NewRequestDataLoader(
+        func(ctx context.Context, ids []int) ([]*User, error) {
+            // Batch query to database
+            return userService.GetUsersByIDs(ctx, ids)
+        },
+        100, // max batch size
+        16*time.Millisecond, // wait time
+    )
+}
+
+// Usage in handler
+func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
+    
+    // Get or create User DataLoader for this request
+    userLoader := GetDataLoader(ctx, "user_loader", func() *RequestDataLoader[int, *User] {
+        return NewUserLoader(ctx)
+    })
+    
+    // Load user (will be batched if multiple requests)
+    user, err := userLoader.Load(ctx, userID)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    
+    json.NewEncoder(w).Encode(user)
+}
+```
+
+##### DataLoader Best Practices:
+- Use **request-scoped instances** to prevent memory leaks
+- Implement **automatic cleanup** after request completion
+- Apply **batch size limits** to prevent memory issues
+- Use **timeout mechanisms** for batch operations
+- Implement **error handling** for failed batch operations
+- Apply **circuit breaker** for external service calls
+- Use **metrics and monitoring** for DataLoader performance
+
+#### Oracle-Specific Patterns:
+- Use **Oracle-specific transactions** with proper isolation levels
+- Implement **Oracle-specific locking** (SELECT FOR UPDATE)
+- Apply **Oracle-specific constraints** (CHECK, UNIQUE, FOREIGN KEY)
+- Use **Oracle-specific triggers** for audit trails
+- Implement **Oracle-specific stored procedures** for complex business logic
+
+#### Database Migrations for Oracle:
+- Use **Oracle-specific migration tools** (Flyway, Liquibase)
+- Implement **Oracle-specific schema changes** (tablespace, partitioning)
+- Apply **Oracle-specific data types** in migration scripts
+- Use **Oracle-specific rollback strategies**
+- Implement **Oracle-specific backup/restore** procedures
+
+#### Oracle Monitoring & Observability:
+- Monitor **Oracle-specific metrics** (SGA, PGA, buffer cache hit ratio)
+- Implement **Oracle-specific health checks** (V$SESSION, V$DATABASE)
+- Use **Oracle-specific logging** (AUDIT, V$LOG)
+- Apply **Oracle-specific performance monitoring** (AWR, ASH reports)
+- Implement **Oracle-specific alerting** for critical thresholds
+
+### Configuration Management:
+- Use **environment-based configuration** with validation
+- Implement **configuration hot-reloading** where appropriate
+- Use **secrets management** (Vault, AWS Secrets Manager)
+- Apply **configuration validation** on startup
+- Use **feature flags** for gradual rollouts
+
+### API Design:
+
+#### RESTful API Standards:
+- Use **HTTP methods correctly**: GET (read), POST (create), PUT (update), PATCH (partial update), DELETE (remove)
+- Follow **resource-based URLs**: `/api/v1/users/{id}` instead of `/api/v1/getUser`
+- Use **plural nouns** for collections: `/users`, `/orders`, `/products`
+- Implement **proper HTTP status codes**: 200, 201, 400, 401, 403, 404, 409, 422, 500
+- Use **consistent response format** with envelope pattern:
+  ```json
+  {
+    "data": {...},
+    "meta": {"pagination": {...}},
+    "errors": [...]
+  }
+  ```
+
+#### API Versioning:
+- Use **URL versioning**: `/api/v1/`, `/api/v2/`
+- Implement **header versioning** for backward compatibility
+- Maintain **deprecation notices** in API responses
+- Provide **migration guides** for breaking changes
+
+#### Request/Response Design:
+- Use **PascalCase** for JSON field names (Go convention)
+- Implement **pagination** with `limit`, `offset`, and `total` fields
+- Apply **field filtering**: `?fields=id,name,email`
+- Use **query parameters** for filtering: `?status=active&role=admin`
+- Implement **sorting**: `?sort=created_at&order=desc`
+
+#### Error Handling:
+- Return **structured error responses** with error codes
+- Use **consistent error format**:
+  ```json
+  {
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Invalid input data",
+      "details": {...}
+    }
+  }
+  ```
+- Implement **field-level validation errors**
+- Provide **actionable error messages**
+
+#### Security & Authentication:
+- Use **JWT tokens** with proper expiration
+- Implement **refresh token** mechanism
+- Apply **CORS** configuration for web clients
+- Use **HTTPS only** in production
+- Implement **API key authentication** for service-to-service calls
+
+#### Documentation:
+- Use **OpenAPI/Swagger** 3.0 specification
+- Provide **interactive API documentation**
+- Include **request/response examples**
+- Document **authentication requirements**
+- Maintain **changelog** for API updates
+
+#### Performance:
+- Implement **caching headers** (Cache-Control, ETag)
+- Use **compression** (gzip) for responses
+- Apply **request/response size limits**
+- Implement **API rate limiting** per user/IP
+- Use **pagination** for large datasets
+
+### Deployment & DevOps:
+- Use **containerization** (Docker) with multi-stage builds
+- Implement **health checks** and **readiness probes**
+- Apply **graceful shutdown** with context cancellation
+- Use **blue-green deployments** or **canary releases**
+- Implement **rollback strategies** for failed deployments
+
+### Code Review & Quality Gates:
+- Implement **mandatory code review** process with at least 2 reviewers
+- Use **automated code quality checks** (golangci-lint, go vet, go fmt)
+- Enforce **test coverage thresholds** (minimum 80% for new code)
+- Apply **security scanning** (gosec, static analysis tools)
+- Use **dependency vulnerability scanning** (nancy, snyk)
+- Implement **performance regression testing** in CI/CD
+- Apply **API contract testing** for service integration
+
+### Message Queue & Event-Driven Architecture:
+- Use **message queues** (RabbitMQ, Apache Kafka, AWS SQS) for async processing
+- Implement **event sourcing** for audit trails and state reconstruction
+- Apply **CQRS pattern** for read/write separation
+- Use **saga pattern** for distributed transactions
+- Implement **dead letter queues** for failed message processing
+- Apply **message versioning** for backward compatibility
+- Use **idempotent message processing** to prevent duplicate operations
+
+### Caching Strategies:
+- Implement **multi-level caching** (in-memory, Redis, CDN)
+- Use **cache-aside pattern** for database caching
+- Apply **write-through caching** for critical data
+- Implement **cache invalidation strategies** (TTL, event-based)
+- Use **distributed caching** with Redis Cluster
+- Apply **cache warming** for frequently accessed data
+- Implement **cache monitoring** and hit rate tracking
+
+### Key Conventions:
+1. Prioritize **readability, simplicity, and maintainability**.
+2. Design for **change**: isolate business logic and minimize framework lock-in.
+3. Emphasize clear **boundaries** and **dependency inversion**.
+4. Ensure all behavior is **observable, testable, and documented**.
+5. **Automate workflows** for testing, building, and deployment.
+6. **Enforce quality gates** through automated checks and code review.
+7. **Design for scale** with event-driven architecture and caching strategies.
