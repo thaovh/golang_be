@@ -78,8 +78,6 @@ if err != nil {
 // Chỉ cần thêm vào AutoMigrate call
 err := m.db.AutoMigrate(
     &entities.User{},
-    &entities.Product{},
-    &entities.Order{},
     &entities.NewEntity{}, // ← Chỉ cần thêm dòng này!
 )
 ```
@@ -118,20 +116,18 @@ err := m.db.AutoMigrate(
 
 ### **Tables được tạo:**
 - `BMSF_USER` (với tất cả BaseEntity fields)
-- `BMSF_PRODUCT` (với tất cả BaseEntity fields)
-- `BMSF_ORDER` (với tất cả BaseEntity fields)
 
 ### **Indexes được tạo tự động:**
-- `IDX_BMSF_USER_USERNAME`
-- `IDX_BMSF_USER_EMAIL`
-- `IDX_BMSF_PRODUCT_CODE`
-- `IDX_BMSF_ORDER_ORDER_NUMBER`
+- `IDX_USER_USERNAME`
+- `IDX_USER_EMAIL`
+- `IDX_USER_DELETEDAT`
+- `IDX_USER_TENANTID`
 - Và nhiều indexes khác...
 
 ### **Constraints được tạo tự động:**
-- `PK_BMSF_USER` (Primary Key)
-- `UK_BMSF_USER_USERNAME` (Unique)
-- `UK_BMSF_USER_EMAIL` (Unique)
+- `PK_USER_ID` (Primary Key)
+- `UK_USER_USERNAME` (Unique)
+- `UK_USER_EMAIL` (Unique)
 - Và nhiều constraints khác...
 
 ## 🔧 **Migration Commands:**
@@ -146,8 +142,6 @@ go run example_gorm_migration.go
 ✅ GORM AutoMigrate demo completed successfully!
 📊 Created tables with BMSF_ prefix:
    - BMSF_USER (with all BaseEntity fields)
-   - BMSF_PRODUCT (with all BaseEntity fields) 
-   - BMSF_ORDER (with all BaseEntity fields)
 🔧 All indexes, constraints, and relationships created automatically!
 🏷️  All table names follow BMSF_ prefix convention!
 📋 All column names are in UPPERCASE (Oracle convention)!

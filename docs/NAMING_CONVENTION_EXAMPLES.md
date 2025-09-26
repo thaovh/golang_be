@@ -23,8 +23,6 @@
 ### **Tables:**
 ```
 BMSF_USER     → BMSF_USER
-BMSF_PRODUCT  → BMSF_PRODUCT  
-BMSF_ORDER    → BMSF_ORDER
 ```
 
 ### **Indexes (tránh trùng lặp):**
@@ -35,20 +33,6 @@ BMSF_USER table:
 - IDX_USER_EMAIL       (Unique index)
 - IDX_USER_DELETEDAT   (Soft delete index)
 - IDX_USER_TENANTID    (Multi-tenant index)
-
-BMSF_PRODUCT table:
-- IDX_PRODUCT_ID       (Primary key index)
-- IDX_PRODUCT_CODE     (Unique index)
-- IDX_PRODUCT_CATEGORY (Category index)
-- IDX_PRODUCT_DELETEDAT (Soft delete index)
-- IDX_PRODUCT_TENANTID (Multi-tenant index)
-
-BMSF_ORDER table:
-- IDX_ORDER_ID         (Primary key index)
-- IDX_ORDER_ORDERNUM   (Unique index)
-- IDX_ORDER_USERID     (Foreign key index)
-- IDX_ORDER_DELETEDAT  (Soft delete index)
-- IDX_ORDER_TENANTID   (Multi-tenant index)
 ```
 
 ### **Constraints (tránh trùng lặp):**
@@ -57,22 +41,11 @@ BMSF_USER table:
 - PK_USER_ID           (Primary key)
 - UK_USER_USERNAME     (Unique constraint)
 - UK_USER_EMAIL        (Unique constraint)
-
-BMSF_PRODUCT table:
-- PK_PRODUCT_ID        (Primary key)
-- UK_PRODUCT_CODE      (Unique constraint)
-
-BMSF_ORDER table:
-- PK_ORDER_ID          (Primary key)
-- UK_ORDER_ORDERNUM    (Unique constraint)
-- FK_ORDER_USERID      (Foreign key constraint)
 ```
 
 ### **Foreign Keys (tránh trùng lặp):**
 ```
-BMSF_ORDER table:
-- FK_ORDER_USERID      (References BMSF_USER.ID)
-- FK_ORDER_PRODUCTID   (References BMSF_PRODUCT.ID)
+No foreign keys in current implementation
 ```
 
 ## 🔧 **Oracle 30-Character Limit Handling:**

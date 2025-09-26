@@ -59,8 +59,6 @@ func (m *GORMMigrator) AutoMigrate(ctx context.Context) error {
 	// Auto-migrate all entities - GORM handles everything automatically!
 	err := m.db.WithContext(ctx).AutoMigrate(
 		&entities.User{},
-		&entities.Product{},
-		&entities.Order{},
 		// Add new entities here - no code changes needed!
 	)
 
